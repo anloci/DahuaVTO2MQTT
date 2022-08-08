@@ -46,11 +46,7 @@ class MQTTClient:
 
         config = self._mqtt_config
 
-        self._mqtt_client = mqtt.Client(config.client_id)
-
-        self._mqtt_client.user_data_set(self)
-
-        self._mqtt_client.username_pw_set(config.username, config.password)
+        self._mqtt_client = mqtt.Client(config.client_id, clean_session=True)
 
         self._mqtt_client.on_connect = self._on_mqtt_connect
         self._mqtt_client.on_message = self._on_mqtt_message
@@ -59,6 +55,10 @@ class MQTTClient:
         while not self.is_connected:
             try:
                 _LOGGER.info("MQTT Broker is trying to connect...")
+
+                self._mqtt_client.user_data_set(self)
+
+                self._mqtt_client.username_pw_set(config.username, config.password)
 
                 self._mqtt_client.connect(config.host, int(config.port), 60)
                 self._mqtt_client.loop_start()

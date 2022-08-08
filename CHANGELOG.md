@@ -2,6 +2,10 @@
 
 ## 2022-May-19
 
+- Set client initialization with `clean_session=True` to avoid repeating disconnection
+
+## 2022-May-19
+
 - Fix wrong call to function
 
 ## 2022-May-17
