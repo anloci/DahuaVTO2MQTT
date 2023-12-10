@@ -1,8 +1,8 @@
-
 import asyncio
 import hashlib
 import json
 import logging
+import re
 import queue
 import struct
 import sys
@@ -87,7 +87,10 @@ class DahuaAPI(asyncio.Protocol):
             for message_data in messages:
                 message = self.parse_message(message_data)
 
-                if message is not None:
+                if message is None:
+                    _LOGGER.warning(f"Unable to process received data, Data: {message_data}, Original Data: {data}")
+
+                else:
                     _LOGGER.debug(f"Handling message: {message}")
 
                     message_id = message.get("id")
@@ -413,9 +416,18 @@ class DahuaAPI(asyncio.Protocol):
                 data_items.append(data_item)
 
         messages = data_items.decode("unicode-escape").split("\n")
-        _LOGGER.debug(f"Data cleaned up, Messages: {messages}")
 
-        return messages
+        result = []
+
+        for message in messages:
+            if "" in message:
+                message = re.sub("DHIP[a-zA-Z]{FF{", "{{", message)
+
+            result.append(message)
+
+        _LOGGER.debug(f"Data cleaned up, Messages: {result}")
+
+        return result
 
     @staticmethod
     def parse_message(message_data):

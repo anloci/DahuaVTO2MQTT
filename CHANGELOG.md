@@ -1,5 +1,10 @@
 # Changelog
 
+## 2023-Dec-10
+
+- Fix message parsing when message begins with pattern `DHIP*{FF{`
+- Add more logs to address issues with message parsing (including original raw data)
+
 ## 2022-Aug-08
 
 - Refactor Dahua and MQTT clients for better recovery of connections
