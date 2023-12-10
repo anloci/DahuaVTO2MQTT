@@ -417,8 +417,8 @@ class DahuaAPI(asyncio.Protocol):
         result = []
 
         for message in messages:
-            if "" in message:
-                message = re.sub("DHIP[a-zA-Z]{FF{", "{{", message)
+            if message.startswith("DHIP"):
+                message = re.sub("DHIP[a-zA-Z]{[a-zA-Z]{1,2}{", "{{", message)
 
             result.append(message)
 
