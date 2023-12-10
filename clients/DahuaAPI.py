@@ -85,12 +85,9 @@ class DahuaAPI(asyncio.Protocol):
             messages = self.parse_data(data)
 
             for message_data in messages:
-                message = self.parse_message(message_data)
+                message = self.parse_message(message_data, data)
 
-                if message is None:
-                    _LOGGER.warning(f"Unable to process received data, Data: {message_data}, Original Data: {data}")
-
-                else:
+                if message is not None:
                     _LOGGER.debug(f"Handling message: {message}")
 
                     message_id = message.get("id")
@@ -430,7 +427,7 @@ class DahuaAPI(asyncio.Protocol):
         return result
 
     @staticmethod
-    def parse_message(message_data):
+    def parse_message(message_data, original_data):
         result = None
 
         try:
@@ -443,7 +440,12 @@ class DahuaAPI(asyncio.Protocol):
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
 
-            _LOGGER.error(f"Failed to read data: {message_data}, error: {e}, Line: {exc_tb.tb_lineno}")
+            _LOGGER.error(
+                f"Failed to read data: {message_data}, "
+                f"Original Data: {original_data}, "
+                f"Error: {e}, "
+                f"Line: {exc_tb.tb_lineno}"
+            )
 
         return result
 
