@@ -414,28 +414,28 @@ class DahuaAPI(asyncio.Protocol):
 
         messages = data_items.decode("unicode-escape").split("\n")
 
-        result = []
+        _LOGGER.debug(f"Data cleaned up, Messages: {messages}")
 
-        for message in messages:
-            if message.startswith("DHIP"):
-                message = re.sub("DHIP[a-zA-Z]{0,2}{[a-zA-Z]{1,2}{", "{", message.lstrip())
-
-            result.append(message)
-
-        _LOGGER.debug(f"Data cleaned up, Messages: {result}")
-
-        return result
+        return messages
 
     @staticmethod
     def parse_message(message_data, original_data):
         result = None
 
         try:
-            if message_data is not None and "{" in message_data:
-                first_char = message_data.index("{")
-                message = message_data[first_char:]
+            if message_data is not None:
+                message_parts = re.split(MESSAGE_PREFIX_PATTERN, message_data)
+                message_parts_count = len(message_parts)
+                message: str | None = None
 
-                result = json.loads(message)
+                if message_parts_count == 1:
+                    message = message_parts[0]
+
+                elif message_parts_count > 1:
+                    message = message_parts[message_parts_count - 1]
+
+                if message is not None:
+                    result = json.loads(message)
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
