@@ -52,4 +52,4 @@ TOPIC_COMMAND = "/Command"
 TOPIC_DOOR = "Open"
 TOPIC_MUTE = "Mute"
 
-MESSAGE_PREFIX_PATTERN = "DHIP[a-zA-Z]{0,2}[{]{0,1}[a-zA-Z]{1,2}"
+MESSAGE_PREFIX_PATTERN = "DHIP[a-zA-Z^!@#%&*()\\]\\[_+-=;':""\",./<>?~`]{0,2}[a-zA-Z^!@#%&*()\\]\\[_+-=;':""\",./<>?~`]{0,2}"

@@ -74,13 +74,14 @@ def parse_message(message_data, original_data):
 
 
 
-data = b' \x00\x00\x00DHIPb\xfe\xff\x7f\x02\x00\x00\x00 \x01\x00\x00\x00\x00\x00\x00 \x01\x00\x00\x00\x00\x00\x00{"error":{"code":268632079,"message":"Component error: login challenge!"},"id":2,"params":{"authorization":"fe2eaba1625968a96cadd6cd5bb3367185d47539","encryption":"Default","mac":"BC325FAF5332","random":"647709486","realm":"Login to 6J0DA6EPAJ4FE11"},"result":false,"session":2147483234}\n'
+data_items = []
 
-messages = parse_data(data)
-print(messages)
+for data in data_items:
+    messages = parse_data(data)
+    print(f"Original: {messages}")
 
-for message_data in messages:
-    message = parse_message(message_data.lstrip(), data)
+    for message_data in messages:
+        message = parse_message(message_data.lstrip(), data)
 
-    print(message)
+        print(message)
 
