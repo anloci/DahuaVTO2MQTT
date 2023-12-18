@@ -52,5 +52,4 @@ TOPIC_COMMAND = "/Command"
 TOPIC_DOOR = "Open"
 TOPIC_MUTE = "Mute"
 
-MESSAGE_CHARS_TO_CLEAN = "[a-zA-Z$%^!@#%&*()_+-=;':"",./<>?~`\"\\]\\[\\{\\}\\n\\s]{0,4}"
-MESSAGE_PREFIX_PATTERN = f"DHIP{MESSAGE_CHARS_TO_CLEAN}"
+JSON_START_PATTERN = "{\""

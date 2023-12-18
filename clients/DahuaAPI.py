@@ -84,7 +84,7 @@ class DahuaAPI(asyncio.Protocol):
             messages = parse_data(data)
 
             for message_data in messages:
-                message = parse_message(message_data.lstrip(), data)
+                message = parse_message(message_data)
 
                 if message is not None:
                     _LOGGER.debug(f"Handling message: {message}")
@@ -97,7 +97,12 @@ class DahuaAPI(asyncio.Protocol):
         except Exception as ex:
             exc_type, exc_obj, exc_tb = sys.exc_info()
 
-            _LOGGER.error(f"Failed to handle message, error: {ex}, Line: {exc_tb.tb_lineno}")
+            _LOGGER.error(
+                f"Failed to handle message, "
+                f"Data: {data}, "
+                f"Error: {ex}, "
+                f"Line: {exc_tb.tb_lineno}"
+            )
 
     def handle_notify_event_stream(self, params):
         try:
