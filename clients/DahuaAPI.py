@@ -85,7 +85,7 @@ class DahuaAPI(asyncio.Protocol):
             messages = self.parse_data(data)
 
             for message_data in messages:
-                message = self.parse_message(message_data, data)
+                message = self.parse_message(message_data.lstrip(), data)
 
                 if message is not None:
                     _LOGGER.debug(f"Handling message: {message}")
@@ -423,7 +423,7 @@ class DahuaAPI(asyncio.Protocol):
         result = None
 
         try:
-            if message_data is not None:
+            if message_data is not None and len(message_data) > 0:
                 message_parts = re.split(MESSAGE_PREFIX_PATTERN, message_data)
                 message_parts_count = len(message_parts)
                 message: str | None = None
