@@ -7,7 +7,7 @@ COPY . ./
 
 RUN apk update && \
     apk upgrade && \
-    pip -r requirements.txt
+    pip -r /app/requirements.txt
 
 ENV DAHUA_VTO_HOST=vto-host
 ENV DAHUA_VTO_USERNAME=Username
