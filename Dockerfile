@@ -23,7 +23,7 @@ ENV EXPORTER_PORT=9563
 RUN chmod +x /app/DahuaVTO.py
 RUN echo "{ \"version\": \"$(date +'%Y.%m.%d').$(( $(date +"%s") - $(date -d "$today 0" "+%s") ))\" }" > /app/version.json
 
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${EXPORTER_PORT}/metrics || exit 1
+# HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${EXPORTER_PORT}/metrics || exit 1
 
 EXPOSE ${EXPORTER_PORT}
 
