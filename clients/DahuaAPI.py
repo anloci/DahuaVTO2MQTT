@@ -30,7 +30,13 @@ class DahuaAPI(asyncio.Protocol):
     data_handlers: Dict[Any, Callable[[Any, str], None]]
     event_handlers: Dict[str, Callable[[dict], None]]
 
-    def __init__(self, outgoing_events: queue.Queue, dahua_config: DahuaConfigurationData, set_api):
+    def __init__(self,
+                 outgoing_events: queue.Queue,
+                 dahua_config: DahuaConfigurationData,
+                 set_api,
+                 set_status,
+                 set_message_metrics):
+
         self.dahua_config = dahua_config
         self.dahua_details = {}
 
@@ -50,6 +56,8 @@ class DahuaAPI(asyncio.Protocol):
 
         self._loop = asyncio.get_event_loop()
         self.outgoing_events = outgoing_events
+        self._set_status = set_status
+        self._set_message_metrics = set_message_metrics
 
         set_api(self)
 
@@ -104,6 +112,8 @@ class DahuaAPI(asyncio.Protocol):
                 f"Line: {exc_tb.tb_lineno}"
             )
 
+            self._set_message_metrics(METRIC_DAHUA_FAILED_MESSAGES, [self.sessionId, "incoming"])
+
     def handle_notify_event_stream(self, params):
         try:
             event_list = params.get("eventList")
@@ -153,6 +163,8 @@ class DahuaAPI(asyncio.Protocol):
             "method": action,
             "params": params
         }
+
+        self._set_message_metrics(METRIC_DAHUA_MESSAGES, [self.sessionId, action])
 
         self.data_handlers[self.request_id] = handler
 
@@ -212,6 +224,8 @@ class DahuaAPI(asyncio.Protocol):
             keep_alive_interval = params.get("keepAliveInterval")
 
             if keep_alive_interval is not None:
+                self._set_status(True)
+
                 self.keep_alive_interval = keep_alive_interval - 5
 
                 self.load_access_control()

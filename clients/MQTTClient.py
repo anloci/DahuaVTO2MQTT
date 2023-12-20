@@ -4,6 +4,7 @@ import sys
 from time import sleep
 
 import paho.mqtt.client as mqtt
+from prometheus_client import CollectorRegistry
 
 from clients.BaseClient import BaseClient
 from common.consts import *
@@ -14,8 +15,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class MQTTClient(BaseClient):
-    def __init__(self):
-        super().__init__("MQTT")
+    def __init__(self, version: str, registry: CollectorRegistry):
+        super().__init__(CLIENT_MQTT, version, registry)
 
         self._mqtt_config = MQTTConfigurationData()
         self._mqtt_client = mqtt.Client(self._mqtt_config.client_id, clean_session=True)
@@ -37,6 +38,8 @@ class MQTTClient(BaseClient):
     def _connect(self):
         super(MQTTClient, self)._connect()
 
+        self.set_status_metrics()
+
         config = self._mqtt_config
 
         while not self.is_connected:
@@ -54,6 +57,8 @@ class MQTTClient(BaseClient):
 
                 _LOGGER.error(f"Failed to connect to broker, retry in 60 seconds, {error_details}")
 
+                self.set_status_metrics()
+
                 sleep(60)
 
     def _event_received(self, data):
@@ -66,8 +71,12 @@ class MQTTClient(BaseClient):
         _LOGGER.debug(f"Publishing MQTT message {topic}: {payload}")
 
         try:
+            self.set_message_metrics(METRIC_MQTT_OUTGOING_MESSAGES, [topic_suffix])
+
             self._mqtt_client.publish(topic, json.dumps(payload, indent=4))
         except Exception as ex:
+            self.set_message_metrics(METRIC_MQTT_FAILED_OUTGOING_MESSAGES, [topic_suffix])
+
             exc_type, exc_obj, exc_tb = sys.exc_info()
 
             _LOGGER.error(
@@ -85,12 +94,16 @@ class MQTTClient(BaseClient):
 
             userdata.is_connected = True
 
+            userdata.set_status_metrics()
+
         else:
             error_message = MQTT_ERROR_MESSAGES.get(rc, MQTT_ERROR_DEFAULT_MESSAGE)
 
             _LOGGER.error(f"MQTT Broker failed due to {error_message}")
 
             userdata.is_connected = False
+
+            userdata.set_status_metrics()
 
             super(MQTTClient, userdata).connect()
 
@@ -114,6 +127,8 @@ class MQTTClient(BaseClient):
                 "payload": payload
             }
 
+            userdata.set_message_metrics(METRIC_MQTT_INCOMING_MESSAGES, [topic])
+
             userdata.outgoing_events.put(event_data)
         except Exception as ex:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -131,5 +146,7 @@ class MQTTClient(BaseClient):
         _LOGGER.warning(f"MQTT Broker got disconnected, Reason Code: {rc} - {reason}")
 
         userdata.is_connected = False
+        userdata.set_status_metrics()
 
         super(MQTTClient, userdata).connect()
+

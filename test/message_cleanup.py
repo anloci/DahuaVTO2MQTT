@@ -3,7 +3,6 @@ import os
 import sys
 import logging
 
-import clients.DahuaAPI as DahuaAPI
 from common.utils import parse_message, parse_data
 
 DEBUG = str(os.environ.get('DEBUG', False)).lower() == str(True).lower()
