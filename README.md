@@ -15,6 +15,8 @@ services:
     container_name: "dahuavto2mqtt"
     hostname: "dahuavto2mqtt"
     restart: "unless-stopped"
+    ports:
+        - 9563:9563
     environment:
       - DAHUA_VTO_HOST=vto-host
       - DAHUA_VTO_USERNAME=Username
