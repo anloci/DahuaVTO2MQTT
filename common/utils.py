@@ -10,21 +10,34 @@ _LOGGER = logging.getLogger(__name__)
 def parse_data(data):
     _LOGGER.debug(f"Parsing data, Content: {data}")
 
-    data_items = bytearray()
+    if not __is_dhip_message(data):
+        raise Exception("The beginning of the stream does not start with a DHIP header")
 
-    for data_item in data:
-        data_item_char = chr(data_item)
-        parsed_char = ascii(data_item_char).replace("'", "")
-        is_valid = data_item_char == parsed_char or data_item_char in ['\n', '\'']
+    messages = []
 
-        if is_valid:
-            data_items.append(data_item)
+    while len(data) > 0:
+        if not __is_dhip_message(data):
+            return messages, b''
 
-    messages = data_items.decode("unicode-escape").split("\n")
+        # Code taken from https://github.com/mcw0/PoC/blob/master/Dahua-DHIP-JSON-Debug-Console.pyhttps://github.com/mcw0/PoC/blob/master/Dahua-DHIP-JSON-Debug-Console.py
+        header = data[0:32]
+        _LOGGER.debug("\n-HEADER-  -DHIP-  SessionID   ID      LEN               LEN")
+        _LOGGER.debug("{}|{}|{}|{}|{}|{}|{}|{}".format(
+            header[0:4].hex(), header[4:8].hex(), header[8:12].hex(),
+            header[12:16].hex(), header[16:20].hex(), header[20:24].hex(),
+            header[24:28].hex(), header[28:32].hex()))
+        data_length = int.from_bytes(header[16:24], "little")
+        if data_length <= (len(data) - 32):
+            json_data = data[32:data_length + 32]
+            data = data[data_length + 32:]
+            messages.append(json_data.decode("utf-8"))
+        else:
+            return messages, data
+    return messages, data
 
-    _LOGGER.debug(f"Data cleaned up, Messages: {messages}")
 
-    return messages
+def __is_dhip_message(stream):
+    return stream[0:8] == b'\x20\x00\x00\x00\x44\x48\x49\x50'
 
 
 def parse_message(message_data):

@@ -58,6 +58,7 @@ class DahuaAPI(asyncio.Protocol):
         self.outgoing_events = outgoing_events
         self._set_status = set_status
         self._set_message_metrics = set_message_metrics
+        self.previous_data = b''
 
         set_api(self)
 
@@ -89,7 +90,7 @@ class DahuaAPI(asyncio.Protocol):
     def data_received(self, data):
         try:
             _LOGGER.debug(f"Received data, Raw Data: {data}")
-            messages = parse_data(data)
+            messages, self.previous_data = parse_data(self.previous_data + data)
 
             for message_data in messages:
                 message = parse_message(message_data)
